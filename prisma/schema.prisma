@@ -8,13 +8,19 @@ datasource db {
 }
 
 model User {
-  id        Int      @default(autoincrement())
-  userId    String   @id @db.Uuid
-  username  String?  @unique @db.VarChar(255)
-  email     String?  @unique @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Profile   Profile?
+  id     			   		Int      					@default(autoincrement())
+  userId    				String  		 			@id @db.Uuid
+  username  				String?  					@unique @db.VarChar(255)
+  email    			 		String?  					@unique @db.VarChar(255)
+  createdAt 				DateTime 					@default(now())
+  updatedAt 				DateTime	 				@updatedAt
+  Profile   				Profile?
+  userConnect   		Connection[]   		@relation("userConnection")
+  friendConnect   	Connection[]   		@relation("friendConnection")
+  requestSender  		FriendRequest[] 	@relation("sentRequests")
+  requestReceiver 	FriendRequest[] 	@relation("receivedRequests")
+  blockedUsers			BlockedUser[]  		@relation("blockedUser")
+  blockingUsers			BlockedUser[]  		@relation("blockingUser")
 }
 
 model Profile {
@@ -25,4 +31,52 @@ model Profile {
   bio       String?
   avatarUrl String?
   user      User    @relation(fields: [profileId], references: [userId])
+}
+
+model Connection {
+  id        			Int				@id @default(autoincrement())
+	userId					String		@db.Uuid
+	friendId				String		@db.Uuid
+	status					Status 		@default(active)
+  createdAt 			DateTime	@default(now())
+  updatedAt 			DateTime	@updatedAt
+  user      			User    	@relation("userConnection", fields: [userId], references: [userId])
+  friend     			User    	@relation("friendConnection", fields: [friendId], references: [userId])
+
+  @@unique([userId, friendId])
+}
+
+enum Status {
+	active
+	blocked
+}
+
+model FriendRequest {
+	id    			    	Int						@id @default(autoincrement())
+	senderId					String				@db.Uuid
+	receiverId				String				@db.Uuid
+	status 						RequestStatus	@default(pending)
+  createdAt 				DateTime			@default(now())
+  updatedAt 				DateTime			@updatedAt
+	user         			User          @relation("receivedRequests", fields: [receiverId], references: [userId])
+  sender       			User          @relation("sentRequests", fields: [senderId], references: [userId])
+
+  @@unique([senderId, receiverId])
+}
+
+enum RequestStatus {
+	pending
+	accepted
+	rejected
+}
+
+model BlockedUser {
+  id            Int				@id @default(autoincrement())
+  userId        String		@db.Uuid
+  blockedUserId String		@db.Uuid
+	user           User     @relation("blockingUser", fields: [userId], references: [userId])
+  blockedUser    User     @relation("blockedUser", fields: [blockedUserId], references: [userId])
+
+
+  @@unique([userId, blockedUserId])
 }
