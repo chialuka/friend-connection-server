@@ -4,6 +4,7 @@ import { config } from 'dotenv';
 import morgan from 'morgan';
 
 import routes from './routes';
+import { errorHandler } from './middleware/error';
 
 const { NODE_ENV } = process.env;
 
@@ -22,6 +23,8 @@ app.use(morgan('combined'));
 app.get('/', (_, res) => res.status(200).send('Friends Connection API'));
 
 app.use('/api/v1', routes);
+
+app.use(errorHandler);
 
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
