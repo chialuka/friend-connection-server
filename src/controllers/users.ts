@@ -56,8 +56,10 @@ export const getNonFriends = async (req: Request, res: Response, next: NextFunct
 			},
 		});
 
-		const friendIds = friends.map((friend) => (friend.userId === userId ? friend.friendId : friend.userId));
-		const nonUserFriends = users.filter((user) => !friendIds.includes(user.userId));
+		const friendIds = friends.map((friend: (typeof friends)[0]) =>
+			friend.userId === userId ? friend.friendId : friend.userId,
+		);
+		const nonUserFriends = users.filter((user: (typeof users)[0]) => !friendIds.includes(user.userId));
 
 		return res.status(200).json({ nonUserFriends });
 	} catch (error) {
