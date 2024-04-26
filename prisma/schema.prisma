@@ -21,6 +21,7 @@ model User {
   requestReceiver 	FriendRequest[] 	@relation("receivedRequests")
   blockedUsers			BlockedUser[]  		@relation("blockedUser")
   blockingUsers			BlockedUser[]  		@relation("blockingUser")
+	posts 						Post[]						@relation("userPost")
 }
 
 model Profile {
@@ -79,4 +80,13 @@ model BlockedUser {
 
 
   @@unique([userId, blockedUserId])
+}
+
+model Post {
+	id 					Int					@default(autoincrement())
+	postId			String			@id @db.Uuid
+	userId 			String			@db.Uuid
+	post 				String
+	likes				Int
+	user 				User 				@relation("userPost", fields: [userId], references: [userId])
 }
