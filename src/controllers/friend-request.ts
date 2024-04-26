@@ -58,6 +58,15 @@ export const updateFriendRequestStatus = async (
 			},
 		});
 
+		if (status === 'accepted') {
+			await prisma.connection.create({
+				data: {
+					userId: senderId,
+					friendId: receiverId,
+				},
+			});
+		}
+
 		return res.status(200).json({ updatedStatus });
 	} catch (error) {
 		next({ message: 'Error creating friend request', cause: error });

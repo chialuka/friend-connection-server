@@ -18,3 +18,51 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 		next({ message: 'Error creating user', cause: error });
 	}
 };
+
+export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const { userId } = req.params;
+		const users = await prisma.user.findMany({
+			where: {
+				userId: {
+					not: userId,
+				},
+			},
+		});
+
+		return res.status(200).json({ users });
+	} catch (error) {
+		next({ message: 'Error getting all users', cause: error });
+	}
+};
+
+export const getNonFriends = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const { userId } = req.params;
+		const users = await prisma.user.findMany({
+			where: {
+				userId: {
+					not: userId,
+				},
+			},
+		});
+		const friends = await prisma.connection.findMany({
+			where: {
+				OR: [{ userId }, { friendId: userId }],
+			},
+			select: {
+				friendId: true,
+				userId: true,
+			},
+		});
+
+		const friendIds = friends.map((friend: (typeof friends)[0]) =>
+			friend.userId === userId ? friend.friendId : friend.userId,
+		);
+		const nonUserFriends = users.filter((user: (typeof users)[0]) => !friendIds.includes(user.userId));
+
+		return res.status(200).json({ nonUserFriends });
+	} catch (error) {
+		next({ message: 'Error getting all users', cause: error });
+	}
+};
