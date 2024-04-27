@@ -49,6 +49,7 @@ export const getNonFriends = async (req: Request, res: Response, next: NextFunct
 		const friends = await prisma.connection.findMany({
 			where: {
 				OR: [{ userId }, { friendId: userId }],
+				status: 'active',
 			},
 			select: {
 				friendId: true,
@@ -56,12 +57,28 @@ export const getNonFriends = async (req: Request, res: Response, next: NextFunct
 			},
 		});
 
+		const friendRequests = await prisma.friendRequest.findMany({
+			where: {
+				OR: [{ senderId: userId }, { receiverId: userId }],
+				NOT: [{ status: 'accepted' }],
+			},
+			select: {
+				senderId: true,
+				receiverId: true,
+			},
+		});
+
 		const friendIds = friends.map((friend: (typeof friends)[0]) =>
 			friend.userId === userId ? friend.friendId : friend.userId,
 		);
-		const nonUserFriends = users.filter((user: (typeof users)[0]) => !friendIds.includes(user.userId));
+		const friendRequestIds = friendRequests.map((request: (typeof friendRequests)[0]) =>
+			request.receiverId === userId ? request.senderId : request.receiverId,
+		);
+		const members = users
+			.filter((user: (typeof users)[0]) => !friendIds.includes(user.userId))
+			.filter((user: (typeof users)[0]) => !friendRequestIds.includes(user.userId));
 
-		return res.status(200).json({ nonUserFriends });
+		return res.status(200).json({ members });
 	} catch (error) {
 		next({ message: 'Error getting all users', cause: error });
 	}
