@@ -11,6 +11,6 @@ router.post('/', validateRequestSchema({ schema: CreateUserSchema, type: 'body' 
 
 router.get('/:userId', validateRequestSchema({ schema: UserIdSchema, type: 'params' }), getAllUsers);
 
-router.get('/non-friends/:userId', validateRequestSchema({ schema: UserIdSchema, type: 'params' }), getNonFriends);
+router.get('/members/:userId', validateRequestSchema({ schema: UserIdSchema, type: 'params' }), getNonFriends);
 
 export default router;
