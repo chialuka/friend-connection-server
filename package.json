@@ -8,6 +8,7 @@
     "dev": "ts-node-dev src/index.ts",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix",
+		"seed": "ts-node-dev prisma/seed.ts",
     "start": "node dist/src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
