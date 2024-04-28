@@ -6,12 +6,55 @@ export const getUserConnections = async (req: Request, res: Response, next: Next
 	try {
 		const { userId } = req.params;
 
-		const connections = await prisma.connection.findMany({
+		const allConnections = await prisma.connection.findMany({
 			where: {
 				OR: [{ userId }, { friendId: userId }],
 				status: 'active',
 			},
+			select: {
+				user: {
+					select: {
+						userId: true,
+						username: true,
+						email: true,
+						createdAt: true,
+					},
+				},
+				friend: {
+					select: {
+						userId: true,
+						username: true,
+						email: true,
+						createdAt: true,
+					},
+				},
+				createdAt: true,
+				status: true,
+			},
 		});
+
+		const connections = allConnections.reduce(
+			(
+				prev: Array<{
+					status: 'blocked' | 'active';
+					joinedAt: Date;
+					createdAt: Date;
+					userId: string;
+					username: string | null;
+					email: string | null;
+				}>,
+				connection: (typeof allConnections)[0],
+			) => {
+				const { user, friend, ...rest } = connection;
+				if (friend.userId === userId) {
+					prev.push({ ...user, joinedAt: user.createdAt, ...rest });
+				} else {
+					prev.push({ ...friend, joinedAt: friend.createdAt, ...rest });
+				}
+				return prev;
+			},
+			[],
+		);
 
 		return res.status(200).json({ connections });
 	} catch (error) {
@@ -23,12 +66,12 @@ export const changeConnectionStatus = async (req: Request, res: Response, next: 
 	try {
 		const { userId, friendId, status } = req.body;
 
-		const connection = await prisma.connection.update({
+		const connection = await prisma.connection.updateMany({
 			where: {
-				userId_friendId: {
-					userId,
-					friendId,
-				},
+				OR: [
+					{ userId, friendId },
+					{ friendId: userId, userId: friendId },
+				],
 			},
 			data: {
 				status,
