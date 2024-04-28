@@ -89,4 +89,6 @@ model Post {
 	post 				String
 	likes				Int
 	user 				User 				@relation("userPost", fields: [userId], references: [userId])
+  createdAt 	DateTime		@default(now())
+  updatedAt 	DateTime		@updatedAt
 }
