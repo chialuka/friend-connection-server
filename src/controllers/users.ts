@@ -6,6 +6,16 @@ import { prisma } from '../database';
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { email, username } = req.body;
+
+		const existingUser = await prisma.user.findFirst({
+			where: {
+				OR: [{ username }, { email }],
+			},
+		});
+
+		if (existingUser) {
+			return res.status(200).json({ user: existingUser });
+		}
 		const newUser = await prisma.user.create({
 			data: {
 				userId: uuid(),
@@ -13,7 +23,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 			},
 		});
 
-		return res.status(201).json({ newUser });
+		return res.status(201).json({ usesr: newUser });
 	} catch (error) {
 		next({ message: 'Error creating user', cause: error });
 	}
