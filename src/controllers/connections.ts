@@ -66,7 +66,7 @@ export const changeConnectionStatus = async (req: Request, res: Response, next: 
 	try {
 		const { userId, friendId, status } = req.body;
 
-		const connection = await prisma.connection.updateMany({
+		await prisma.connection.updateMany({
 			where: {
 				OR: [
 					{ userId, friendId },
@@ -75,6 +75,14 @@ export const changeConnectionStatus = async (req: Request, res: Response, next: 
 			},
 			data: {
 				status,
+			},
+		});
+		const connection = await prisma.connection.findFirst({
+			where: {
+				OR: [
+					{ userId, friendId },
+					{ friendId: userId, userId: friendId },
+				],
 			},
 		});
 
