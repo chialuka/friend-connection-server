@@ -50,7 +50,10 @@ export const getStatusPostsForUser = async (req: Request, res: Response, next: N
 		const allStatuses = await Promise.all(
 			ids.map((id: string) => prisma.post.findMany({ where: { userId: id }, include: { user: true } })),
 		);
-		const statusUpdates = allStatuses.filter((item) => item.length).flat();
+		const statusUpdates = allStatuses
+			.filter((item) => item.length)
+			.flat()
+			.sort((a, b) => a.id - b.id);
 		res.status(200).json({ statusUpdates });
 	} catch (error) {
 		next({ message: 'Error getting status updates for user', cause: error });
