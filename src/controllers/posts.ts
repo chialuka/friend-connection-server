@@ -31,7 +31,7 @@ export const getStatusPostsForUser = async (req: Request, res: Response, next: N
 	try {
 		const { userId } = req.params;
 
-		const userConnections = await prisma.connection.findMany({
+		const friends = await prisma.connection.findMany({
 			where: {
 				OR: [{ userId }, { friendId: userId }],
 				status: 'active',
@@ -43,7 +43,9 @@ export const getStatusPostsForUser = async (req: Request, res: Response, next: N
 			},
 		});
 
-		const ids = [...new Set(userConnections.flatMap((connection) => [connection.friendId, connection.userId]))];
+		const ids = [
+			...new Set(friends.flatMap((connection: (typeof friends)[0]) => [connection.friendId, connection.userId])),
+		];
 
 		const allStatuses = await Promise.all(
 			ids.map((id: string) => prisma.post.findMany({ where: { userId: id }, include: { user: true } })),
