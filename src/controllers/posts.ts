@@ -43,7 +43,7 @@ export const getStatusPostsForUser = async (req: Request, res: Response, next: N
 			},
 		});
 
-		const ids = [
+		const ids: Array<string> = [
 			...new Set(friends.flatMap((connection: (typeof friends)[0]) => [connection.friendId, connection.userId])),
 		];
 
