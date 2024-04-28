@@ -27,6 +27,26 @@ export const createFriendRequest = async (req: Request, res: Response, next: Nex
 	}
 };
 
+export const getFriendRequests = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const { userId } = req.params;
+
+		const friendRequests = await prisma.friendRequest.findMany({
+			where: {
+				receiverId: userId,
+				status: 'pending',
+			},
+			include: {
+				sender: true,
+			},
+		});
+
+		return res.status(200).json({ friendRequests });
+	} catch (error) {
+		next({ message: 'Error getting friend requests', cause: error });
+	}
+};
+
 export const updateFriendRequestStatus = async (
 	req: Request<
 		Record<string, unknown>,
