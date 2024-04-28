@@ -45,7 +45,7 @@ export const getStatusPostsForUser = async (req: Request, res: Response, next: N
 
 		const ids: Array<string> = [
 			...new Set(friends.flatMap((connection: (typeof friends)[0]) => [connection.friendId, connection.userId])),
-		];
+		] as Array<string>;
 
 		const allStatuses = await Promise.all(
 			ids.map((id: string) => prisma.post.findMany({ where: { userId: id }, include: { user: true } })),
